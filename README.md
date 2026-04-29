@@ -1,1 +1,1 @@
-# CreditSead-Loan-Management-System
+# CreditSea-Loan-Management-System
