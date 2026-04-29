@@ -1,0 +1,8 @@
+# Dependencies
+node_modules/
+
+# Environment Variables (CRITICAL FOR SECURITY)
+.env
+
+# Compiled Output
+dist/
