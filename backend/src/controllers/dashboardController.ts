@@ -178,7 +178,9 @@ export const getCollectionQueue = async (req: AuthRequest, res: Response): Promi
           .populate('recordedBy', 'name')
           .sort({ date: -1 })
           .lean();
-        const outstanding = loan.totalRepayment - loan.totalPaid;
+          
+        // FIX: Clean the outstanding float calculation for the API response
+        const outstanding = Number((loan.totalRepayment - loan.totalPaid).toFixed(2));
         return { ...loan, payments, outstanding: Math.max(0, outstanding) };
       })
     );
@@ -219,7 +221,8 @@ export const recordPayment = async (req: AuthRequest, res: Response): Promise<vo
       return;
     }
 
-    const outstanding = loan.totalRepayment - loan.totalPaid;
+    // FIX: Force JS to evaluate the outstanding amount to strictly 2 decimal places
+    const outstanding = Number((loan.totalRepayment - loan.totalPaid).toFixed(2));
     if (paymentAmount > outstanding) {
       res.status(400).json({
         message: `Payment amount ₹${paymentAmount} exceeds outstanding balance ₹${outstanding.toFixed(2)}.`,
@@ -246,11 +249,11 @@ export const recordPayment = async (req: AuthRequest, res: Response): Promise<vo
       throw err;
     }
 
-    // Update loan's total paid
-    loan.totalPaid += paymentAmount;
+    // FIX: Update loan's total paid and enforce 2 decimal precision so the DB doesn't drift
+    loan.totalPaid = Number((loan.totalPaid + paymentAmount).toFixed(2));
 
-    // Auto-close when fully repaid 
-    if (loan.totalPaid >= loan.totalRepayment - 0.01) {
+    // Auto-close when fully repaid (Comparing cleaned numbers)
+    if (loan.totalPaid >= Number(loan.totalRepayment.toFixed(2))) {
       loan.status = 'closed';
       loan.closedAt = new Date();
     }
@@ -267,7 +270,7 @@ export const recordPayment = async (req: AuthRequest, res: Response): Promise<vo
         status: loan.status,
         totalPaid: loan.totalPaid,
         totalRepayment: loan.totalRepayment,
-        outstanding: Math.max(0, loan.totalRepayment - loan.totalPaid),
+        outstanding: Math.max(0, Number((loan.totalRepayment - loan.totalPaid).toFixed(2))),
       },
     });
   } catch (error) {

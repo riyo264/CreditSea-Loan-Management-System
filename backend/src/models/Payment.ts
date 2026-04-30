@@ -20,7 +20,7 @@ const paymentSchema = new Schema<IPayment>(
       trim: true,
       uppercase: true,
     },
-    amount: { type: Number, required: true, min: 1 },
+    amount: { type: Number, required: true, min:  0.01 },
     date: { type: Date, required: true },
     recordedBy: { type: Schema.Types.ObjectId, ref: 'User', required: true },
   },

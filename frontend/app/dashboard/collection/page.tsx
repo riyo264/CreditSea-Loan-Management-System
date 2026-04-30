@@ -5,7 +5,12 @@ import { dashboardApi } from '@/lib/api';
 import axios from 'axios';
 
 const formatINR = (n: number) =>
-  new Intl.NumberFormat('en-IN', { style: 'currency', currency: 'INR', maximumFractionDigits: 0 }).format(n);
+  new Intl.NumberFormat('en-IN', { 
+    style: 'currency', 
+    currency: 'INR', 
+    minimumFractionDigits: 2,
+    maximumFractionDigits: 2 
+  }).format(n);
 
 interface Loan {
   _id: string;
@@ -108,7 +113,12 @@ export default function CollectionPage() {
                   </tr>
                 )}
                 {loans.map((loan) => {
+                  // Calculate the raw outstanding amount
                   const outstanding = loan.totalRepayment - loan.totalPaid;
+                  
+                  // Force JavaScript to clean up the decimal to exactly 2 places for the input field
+                  const cleanOutstanding = Math.max(0, outstanding).toFixed(2); 
+                  
                   const progressPct = Math.min(100, (loan.totalPaid / loan.totalRepayment) * 100);
                   
                   return (
@@ -133,7 +143,12 @@ export default function CollectionPage() {
                       <td className="px-6 py-4 text-right">
                         <button
                           className="px-4 py-2 bg-white border border-slate-200 text-slate-700 hover:text-brand-700 hover:border-brand-300 hover:bg-brand-50 rounded-lg text-xs font-bold shadow-sm active:scale-95 transition-all"
-                          onClick={() => setPaymentModal({ loanId: loan._id, amount: outstanding.toString(), utr: '', date: new Date().toISOString().split('T')[0] })}
+                          onClick={() => setPaymentModal({ 
+                            loanId: loan._id, 
+                            amount: cleanOutstanding, // Pass the clean 2-decimal string here
+                            utr: '', 
+                            date: new Date().toISOString().split('T')[0] 
+                          })}
                         >
                           Record Payment
                         </button>
@@ -165,7 +180,8 @@ export default function CollectionPage() {
                     type="number"
                     required
                     className="w-full pl-9 pr-4 py-3 border border-slate-200 rounded-xl text-slate-900 bg-slate-50 focus:bg-white focus:outline-none focus:ring-2 focus:ring-brand-500/30 focus:border-brand-500 transition-all font-semibold"
-                    min="1"
+                    min="0.01"
+                    step="0.01"
                     value={paymentModal.amount}
                     onChange={(e) => setPaymentModal({ ...paymentModal, amount: e.target.value })}
                   />
