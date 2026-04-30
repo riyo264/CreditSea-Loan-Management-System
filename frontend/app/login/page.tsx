@@ -11,23 +11,22 @@ export default function LoginPage() {
   const router = useRouter();
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
+  const [showPassword, setShowPassword] = useState(false);
   const [error, setError] = useState('');
   const [loading, setLoading] = useState(false);
 
-  // Redirect if already logged in
   useEffect(() => {
     if (!isLoading && user) {
       const dest = user.role === 'borrower' 
         ? '/apply' 
         : `/dashboard/${user.role === 'admin' ? 'sales' : user.role}`;
-      
       router.replace(dest);
     }
   }, [user, isLoading, router]);
 
   if (isLoading || user) {
     return (
-      <div className="min-h-screen flex items-center justify-center bg-slate-50">
+      <div className="min-h-screen flex items-center justify-center bg-white">
         <div className="w-8 h-8 border-4 border-brand-600 border-t-transparent rounded-full animate-spin" />
       </div>
     );
@@ -39,7 +38,6 @@ export default function LoginPage() {
     setLoading(true);
     try {
       await login(email, password);
-      // Redirect handled by home page or here
     } catch (err: unknown) {
       if (axios.isAxiosError(err)) {
         setError(err.response?.data?.message || 'Login failed.');
@@ -51,73 +49,173 @@ export default function LoginPage() {
     }
   };
 
-  return (
-    <div className="min-h-screen flex items-center justify-center px-4 bg-gradient-to-br from-brand-50 to-slate-100">
-      <div className="w-full max-w-md">
-        {/* Logo / Title */}
-        <div className="text-center mb-8">
-          <div className="inline-flex items-center justify-center w-16 h-16 rounded-2xl bg-brand-600 text-white text-2xl font-bold mb-4 shadow-lg">
-            L
-          </div>
-          <h1 className="text-3xl font-bold text-slate-900">LMS Portal</h1>
-          <p className="text-slate-500 mt-1">Sign in to your account</p>
-        </div>
+  const demoAccounts = [
+    { role: 'Admin', email: 'admin@lms.com', password: 'Admin@123' },
+    { role: 'Sales', email: 'sales@lms.com', password: 'Sales@123' },
+    { role: 'Sanction', email: 'sanction@lms.com', password: 'Sanction@123' },
+    { role: 'Disburse', email: 'disbursement@lms.com', password: 'Disburse@123' },
+    { role: 'Collect', email: 'collection@lms.com', password: 'Collect@123' },
+    { role: 'Borrower', email: 'borrower@lms.com', password: 'Borrower@123' },
+  ];
 
-        <div className="card shadow-md">
-          <form onSubmit={handleSubmit} className="space-y-5">
+  const handleDemoClick = (demoEmail: string, demoPassword: string) => {
+    setEmail(demoEmail);
+    setPassword(demoPassword);
+    setShowPassword(false); 
+  };
+
+  return (
+    <div className="min-h-screen flex bg-white">
+      {/* LEFT PANEL - Branding & Visuals (Hidden on mobile) */}
+      <div className="hidden lg:flex relative w-1/2 overflow-hidden bg-slate-900 items-center justify-center">
+        {/* Animated Background Gradients / Mesh Effect */}
+        <div className="absolute -top-[20%] -left-[10%] w-[70%] h-[70%] rounded-full bg-brand-600/30 blur-[120px] mix-blend-screen" />
+        <div className="absolute bottom-[0%] -right-[10%] w-[60%] h-[60%] rounded-full bg-blue-600/20 blur-[100px] mix-blend-screen" />
+        <div className="absolute top-[20%] right-[20%] w-[40%] h-[40%] rounded-full bg-purple-500/20 blur-[100px] mix-blend-screen" />
+        
+        {/* Abstract Pattern Overlay */}
+        <div className="absolute inset-0 bg-[url('https://grainy-gradients.vercel.app/noise.svg')] opacity-20 brightness-100 contrast-150"></div>
+
+        <div className="relative z-10 max-w-lg px-12 text-white">
+          <div className="inline-flex items-center justify-center w-16 h-16 rounded-2xl bg-white/10 backdrop-blur-xl border border-white/20 text-white text-3xl font-bold mb-8 shadow-2xl">
+            C
+          </div>
+          <h1 className="text-5xl font-extrabold tracking-tight mb-6 leading-tight">
+            Next-Gen <br/>
+            <span className="text-transparent bg-clip-text bg-gradient-to-r from-brand-300 to-blue-200">
+              Loan Management.
+            </span>
+          </h1>
+          <p className="text-lg text-slate-300 font-medium leading-relaxed mb-8">
+            Automate underwriting, streamline disbursements, and track collections in real-time with our intelligent processing engine.
+          </p>
+          
+          {/* Trust Indicators / Metrics */}
+          <div className="flex items-center gap-8 pt-8 border-t border-white/10">
+            <div>
+              <p className="text-3xl font-bold text-white">99.9%</p>
+              <p className="text-sm text-slate-400 mt-1">Uptime SLA</p>
+            </div>
+            <div>
+              <p className="text-3xl font-bold text-white">&lt;2s</p>
+              <p className="text-sm text-slate-400 mt-1">BRE Processing</p>
+            </div>
+            <div>
+              <p className="text-3xl font-bold text-white">256-bit</p>
+              <p className="text-sm text-slate-400 mt-1">Encryption</p>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      {/* RIGHT PANEL - Login Form */}
+      <div className="w-full lg:w-1/2 flex items-center justify-center p-8 sm:p-12 lg:p-24 bg-white relative">
+        <div className="w-full max-w-md">
+          {/* Mobile Logo (Only visible on small screens) */}
+          <div className="lg:hidden text-center mb-10">
+            <div className="inline-flex items-center justify-center w-14 h-14 rounded-xl bg-brand-600 text-white text-2xl font-bold mb-4 shadow-lg">
+              C
+            </div>
+            <h2 className="text-2xl font-bold text-slate-900">CreditSea Portal</h2>
+          </div>
+
+          <div className="mb-10 text-left">
+            <h2 className="text-3xl font-bold text-slate-900 tracking-tight">Welcome back</h2>
+            <p className="text-slate-500 mt-2 text-sm font-medium">Please enter your credentials to access the system.</p>
+          </div>
+
+          <form onSubmit={handleSubmit} className="space-y-6">
             {error && (
-              <div className="bg-red-50 border border-red-200 text-red-700 rounded-lg px-4 py-3 text-sm">
+              <div className="bg-red-50/50 border border-red-200 text-red-700 rounded-xl px-4 py-3 text-sm flex items-center gap-3">
+                <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5 shrink-0" viewBox="0 0 20 20" fill="currentColor">
+                  <path fillRule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zM8.28 7.22a.75.75 0 00-1.06 1.06L8.94 10l-1.72 1.72a.75.75 0 101.06 1.06L10 11.06l1.72 1.72a.75.75 0 101.06-1.06L11.06 10l1.72-1.72a.75.75 0 00-1.06-1.06L10 8.94 8.28 7.22z" clipRule="evenodd" />
+                </svg>
                 {error}
               </div>
             )}
 
-            <div>
-              <label className="block text-sm font-medium text-slate-700 mb-1">Email</label>
-              <input
-                type="email"
-                className="input"
-                placeholder="you@example.com"
-                value={email}
-                onChange={(e) => setEmail(e.target.value)}
-                required
-              />
+            <div className="space-y-5">
+              <div>
+                <label className="block text-sm font-semibold text-slate-700 mb-1.5">Work Email</label>
+                <input
+                  type="email"
+                  className="w-full px-4 py-3 border border-slate-200 rounded-xl text-slate-900 bg-slate-50 focus:bg-white focus:outline-none focus:ring-2 focus:ring-brand-500/30 focus:border-brand-500 placeholder:text-slate-400 transition-all shadow-sm"
+                  placeholder="name@company.com"
+                  value={email}
+                  onChange={(e) => setEmail(e.target.value)}
+                  required
+                />
+              </div>
+
+              <div>
+                <label className="block text-sm font-semibold text-slate-700 mb-1.5">Password</label>
+                <div className="relative">
+                  <input
+                    type={showPassword ? 'text' : 'password'}
+                    className="w-full px-4 py-3 pr-12 border border-slate-200 rounded-xl text-slate-900 bg-slate-50 focus:bg-white focus:outline-none focus:ring-2 focus:ring-brand-500/30 focus:border-brand-500 placeholder:text-slate-400 transition-all shadow-sm"
+                    placeholder="••••••••"
+                    value={password}
+                    onChange={(e) => setPassword(e.target.value)}
+                    required
+                  />
+                  <button
+                    type="button"
+                    onClick={() => setShowPassword(!showPassword)}
+                    className="absolute right-4 top-1/2 -translate-y-1/2 text-slate-400 hover:text-brand-600 focus:outline-none transition-colors"
+                  >
+                    {showPassword ? (
+                      <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={1.5} stroke="currentColor" className="w-5 h-5">
+                        <path strokeLinecap="round" strokeLinejoin="round" d="M3.98 8.223A10.477 10.477 0 001.934 12C3.226 16.338 7.244 19.5 12 19.5c.993 0 1.953-.138 2.863-.395M6.228 6.228A10.45 10.45 0 0112 4.5c4.756 0 8.773 3.162 10.065 7.498a10.523 10.523 0 01-4.293 5.774M6.228 6.228L3 3m3.228 3.228l3.65 3.65m7.894 7.894L21 21m-3.228-3.228l-3.65-3.65m0 0a3 3 0 10-4.243-4.243m4.242 4.242L9.88 9.88" />
+                      </svg>
+                    ) : (
+                      <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={1.5} stroke="currentColor" className="w-5 h-5">
+                        <path strokeLinecap="round" strokeLinejoin="round" d="M2.036 12.322a1.012 1.012 0 010-.639C3.423 7.51 7.36 4.5 12 4.5c4.638 0 8.573 3.007 9.963 7.178.07.207.07.431 0 .639C20.577 16.49 16.64 19.5 12 19.5c-4.638 0-8.573-3.007-9.963-7.178z" />
+                        <path strokeLinecap="round" strokeLinejoin="round" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" />
+                      </svg>
+                    )}
+                  </button>
+                </div>
+              </div>
             </div>
 
-            <div>
-              <label className="block text-sm font-medium text-slate-700 mb-1">Password</label>
-              <input
-                type="password"
-                className="input"
-                placeholder="••••••••"
-                value={password}
-                onChange={(e) => setPassword(e.target.value)}
-                required
-              />
-            </div>
-
-            <button type="submit" className="btn-primary w-full" disabled={loading}>
-              {loading ? 'Signing in…' : 'Sign In'}
+            <button 
+              type="submit" 
+              className="w-full bg-slate-900 hover:bg-slate-800 active:scale-[0.98] text-white font-semibold py-3.5 px-6 rounded-xl shadow-lg shadow-slate-900/20 transition-all duration-300 disabled:opacity-70 disabled:cursor-not-allowed flex justify-center items-center gap-2" 
+              disabled={loading}
+            >
+              {loading ? (
+                <>
+                  <div className="w-5 h-5 border-2 border-white/30 border-t-white rounded-full animate-spin" />
+                  Authenticating...
+                </>
+              ) : 'Sign In to Portal'}
             </button>
           </form>
 
-          <p className="text-center text-sm text-slate-500 mt-5">
-            New borrower?{' '}
-            <Link href="/register" className="text-brand-600 font-medium hover:underline">
-              Create account
+          <div className="mt-8 text-center text-sm font-medium text-slate-500">
+            Don't have an account?{' '}
+            <Link href="/register" className="text-brand-600 hover:text-brand-700 hover:underline underline-offset-4 transition-colors">
+              Apply as a Borrower
             </Link>
-          </p>
-        </div>
+          </div>
 
-        {/* Demo credentials hint */}
-        <div className="mt-4 card bg-slate-50 border-slate-200 text-xs text-slate-500">
-          <p className="font-semibold text-slate-600 mb-2">Demo credentials:</p>
-          <div className="space-y-1 font-mono">
-            <p><span className="text-brand-600">admin@lms.com</span> / Admin@123</p>
-            <p><span className="text-brand-600">sanction@lms.com</span> / Sanction@123</p>
-            <p><span className="text-brand-600">sales@lms.com</span> / Sales@123</p>
-            <p><span className="text-brand-600">disbursement@lms.com</span> / Disburse@123</p>
-            <p><span className="text-brand-600">collection@lms.com</span> / Collect@123</p>
-            <p><span className="text-brand-600">borrower@lms.com</span> / Borrower@123</p>
+          {/* Evaluator Quick Login */}
+          <div className="mt-12 pt-8 border-t border-slate-100">
+            <p className="text-xs font-bold text-slate-400 uppercase tracking-widest text-center mb-5">
+              1-Click Evaluator Login
+            </p>
+            <div className="flex flex-wrap justify-center gap-2.5">
+              {demoAccounts.map((acc) => (
+                <button
+                  key={acc.role}
+                  type="button"
+                  onClick={() => handleDemoClick(acc.email, acc.password)}
+                  className="group relative px-4 py-2 bg-white hover:bg-slate-50 border border-slate-200 hover:border-brand-300 rounded-lg text-xs font-semibold text-slate-600 hover:text-brand-700 shadow-sm hover:shadow transition-all duration-200 active:scale-95"
+                >
+                  {acc.role}
+                </button>
+              ))}
+            </div>
           </div>
         </div>
       </div>
