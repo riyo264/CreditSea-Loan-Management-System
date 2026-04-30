@@ -133,7 +133,7 @@ export const applyForLoan = async (req: AuthRequest, res: Response): Promise<voi
     }
 
     // Check if already applied
-    const existingLoan = await Loan.findOne({ borrower: borrowerId, status: { $ne: 'rejected' } });
+    const existingLoan = await Loan.findOne({ borrower: borrowerId, status: { $in: ['applied', 'sanctioned', 'disbursed'] } });
     if (existingLoan) {
       res.status(409).json({
         message: 'You already have an active loan application.',
