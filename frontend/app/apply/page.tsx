@@ -91,7 +91,9 @@ export default function ApplyPage() {
     if (!user || user.role !== 'borrower') return;
     applicationApi.getStatus().then((res) => {
       const { loan } = res.data;
-      if (loan) router.replace('/status');
+      if (loan && !['closed', 'rejected'].includes(loan.status)) {
+        router.replace('/status');
+      }
     }).catch(() => {});
   }, [user, router]);
 
